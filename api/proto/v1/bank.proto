@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package bankapi.v1;
+option go_package = "bankapi/pkg/bank/v1";
+
+import "google/protobuf/timestamp.proto";
+
+service TemplateService {
+  rpc CreateTemplate(MakeTemplate) returns (TemplateId);
+  rpc GetAllTemplates (All) returns (TemplatesList);
+  rpc GetTemplateById (TemplateId) returns (TemplatesList);
+  rpc EditTemplate (TemplateFixes) returns (Template);
+  rpc RemoveTemplate(TemplateId) returns (TemplatesList);
+}
+
+message MakeTemplate {
+  string name = 1;
+  string phone = 2;
+}
+
+message TemplateId {
+  int64  id = 1;
+}
+
+message All {
+}
+
+message TemplatesList {
+  repeated Template items = 1;
+}
+
+message TemplateFixes {
+  int64  id = 1;
+  string name = 2;
+  string phone = 3;
+}
+
+message Template {
+  int64  id = 1;
+  string name = 2;
+  string phone = 3;
+  google.protobuf.Timestamp created = 4;
+  google.protobuf.Timestamp edited = 5;
+}
