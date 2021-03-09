@@ -52,7 +52,7 @@ func execute(addr string, db string) error {
 	}
 
 	grpcServer := grpc.NewServer()
-	server := app.NewServer()
+	server := app.NewServer(pool, ctx)
 	bankgrpcv1.RegisterTemplateServiceServer(grpcServer, server)
 
 	return grpcServer.Serve(listener)
