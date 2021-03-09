@@ -8,9 +8,9 @@ import "google/protobuf/timestamp.proto";
 service TemplateService {
   rpc CreateTemplate(MakeTemplate) returns (TemplateId);
   rpc GetAllTemplates (All) returns (TemplatesList);
-  rpc GetTemplateById (TemplateId) returns (TemplatesList);
+  rpc GetTemplateById (TemplateId) returns (Template);
   rpc EditTemplate (TemplateFixes) returns (Template);
-  rpc RemoveTemplate(TemplateId) returns (TemplatesList);
+  rpc RemoveTemplate(TemplateId) returns (Template);
 }
 
 message MakeTemplate {

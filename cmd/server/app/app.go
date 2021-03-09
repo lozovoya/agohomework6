@@ -79,10 +79,9 @@ func (s *Server) GetAllTemplates(ctx context.Context, request *bankgrpcv1.All) (
 	return &templates, nil
 }
 
-func (s *Server) GetTemplateById(ctx context.Context, request *bankgrpcv1.TemplateId) (*bankgrpcv1.TemplatesList, error) {
+func (s *Server) GetTemplateById(ctx context.Context, request *bankgrpcv1.TemplateId) (*bankgrpcv1.Template, error) {
 	log.Printf("template %d requested", request.Id)
 
-	var templates bankgrpcv1.TemplatesList
 	var template bankgrpcv1.Template
 	var created, edited time3.Time
 
@@ -104,15 +103,58 @@ func (s *Server) GetTemplateById(ctx context.Context, request *bankgrpcv1.Templa
 		log.Println(err)
 		return nil, ErrRead
 	}
-	templates.Items = append(templates.Items, &template)
 
-	return &templates, nil
+	return &template, nil
 }
 
 func (s *Server) EditTemplate(ctx context.Context, request *bankgrpcv1.TemplateFixes) (*bankgrpcv1.Template, error) {
-	return nil, nil
+	log.Printf("template %d edit requested", request.Id)
+
+	var template bankgrpcv1.Template
+	var created, edited time3.Time
+	err := s.pool.QueryRow(ctx,
+		"UPDATE templates SET name = $1, phone = $2, edited = CURRENT_TIMESTAMP WHERE id = $3 RETURNING id, name, phone, created, edited",
+		request.Name, request.Phone, request.Id).Scan(&template.Id, &template.Name, &template.Phone, &created, &edited)
+	if err != nil {
+		log.Println(err)
+		return nil, ErrRead
+	}
+	template.Created, err = ptypes.TimestampProto(created)
+	if err != nil {
+		log.Println(err)
+		return nil, ErrRead
+	}
+	template.Edited, err = ptypes.TimestampProto(edited)
+	if err != nil {
+		log.Println(err)
+		return nil, ErrRead
+	}
+
+	return &template, nil
 }
 
-func (s *Server) RemoveTemplate(ctx context.Context, request *bankgrpcv1.TemplateId) (*bankgrpcv1.TemplatesList, error) {
-	return nil, nil
+func (s *Server) RemoveTemplate(ctx context.Context, request *bankgrpcv1.TemplateId) (*bankgrpcv1.Template, error) {
+	log.Printf("template %d remove requested", request.Id)
+
+	var template bankgrpcv1.Template
+	var created, edited time3.Time
+	err := s.pool.QueryRow(ctx,
+		"DELETE FROM templates  WHERE id = $1 RETURNING id, name, phone, created, edited",
+		request.Id).Scan(&template.Id, &template.Name, &template.Phone, &created, &edited)
+	if err != nil {
+		log.Println(err)
+		return nil, ErrRead
+	}
+	template.Created, err = ptypes.TimestampProto(created)
+	if err != nil {
+		log.Println(err)
+		return nil, ErrRead
+	}
+	template.Edited, err = ptypes.TimestampProto(edited)
+	if err != nil {
+		log.Println(err)
+		return nil, ErrRead
+	}
+
+	return &template, nil
 }
